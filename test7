@@ -1,0 +1,214 @@
+local player = game.Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+local TweenService = game:GetService("TweenService")
+
+if playerGui:FindFirstChild("MiniPopup") then
+	playerGui.MiniPopup:Destroy()
+end
+
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "MiniPopup"
+screenGui.IgnoreGuiInset = true
+screenGui.ResetOnSpawn = false
+screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Global
+screenGui.DisplayOrder = 999
+screenGui.Parent = playerGui
+
+-- Utility functions
+local function addShadowText(label)
+	local shadow = label:Clone()
+	shadow.TextColor3 = Color3.new(0, 0, 0)
+	shadow.TextTransparency = 0.8
+	shadow.ZIndex = label.ZIndex - 1
+	shadow.Position = label.Position + UDim2.new(0, 2, 0, 2)
+	shadow.Name = label.Name .. "_Shadow"
+	shadow.TextStrokeTransparency = 1
+	shadow.Parent = label.Parent
+end
+
+local function addShadowFrame(frame)
+	local stroke = Instance.new("UIStroke")
+	stroke.Color = Color3.new(0, 0, 0)
+	stroke.Thickness = 1
+	stroke.Transparency = 0.6
+	stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+	stroke.Parent = frame
+end
+
+-- Container
+local container = Instance.new("Frame")
+container.Size = UDim2.new(0, 360, 0, 220)
+container.Position = UDim2.new(0.5, 0, 0.5, 0)
+container.AnchorPoint = Vector2.new(0.5, 0.5)
+container.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+container.ZIndex = 10
+container.Parent = screenGui
+addShadowFrame(container)
+
+Instance.new("UICorner", container).CornerRadius = UDim.new(0, 14)
+
+-- Animated Gradient Background
+local gradient = Instance.new("UIGradient")
+gradient.Color = ColorSequence.new{
+	ColorSequenceKeypoint.new(0, Color3.fromRGB(60, 60, 60)),
+	ColorSequenceKeypoint.new(1, Color3.fromRGB(25, 25, 25))
+}
+gradient.Rotation = 0
+gradient.Parent = container
+
+task.spawn(function()
+	while container.Parent do
+		gradient.Rotation = (gradient.Rotation + 0.05) % 360
+		task.wait(0.01)
+	end
+end)
+
+-- Minimize Button (White Icon)
+local minimizeBtn = Instance.new("TextButton")
+minimizeBtn.Size = UDim2.new(0, 24, 0, 24)
+minimizeBtn.Position = UDim2.new(1, -28, 0, 4)
+minimizeBtn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+minimizeBtn.Text = "-"
+minimizeBtn.TextColor3 = Color3.new(0, 0, 0)
+minimizeBtn.Font = Enum.Font.FredokaOne
+minimizeBtn.TextSize = 18
+minimizeBtn.ZIndex = 12
+minimizeBtn.Parent = container
+Instance.new("UICorner", minimizeBtn).CornerRadius = UDim.new(1, 0)
+addShadowFrame(minimizeBtn)
+
+-- Raccoon Emoji Button (When Minimized)
+local raccoonBtn = Instance.new("TextButton")
+raccoonBtn.Size = UDim2.new(0, 40, 0, 40)
+raccoonBtn.Position = UDim2.new(0, 20, 1, -50)
+raccoonBtn.Text = "🦝"
+raccoonBtn.TextColor3 = Color3.new(1, 1, 1)
+raccoonBtn.Font = Enum.Font.FredokaOne
+raccoonBtn.TextSize = 28
+raccoonBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+raccoonBtn.Visible = false
+raccoonBtn.ZIndex = 13
+raccoonBtn.Parent = screenGui
+Instance.new("UICorner", raccoonBtn).CornerRadius = UDim.new(1, 0)
+addShadowFrame(raccoonBtn)
+
+-- Subtitle
+local subtitle = Instance.new("TextLabel")
+subtitle.Size = UDim2.new(1, -20, 0.1, 0)
+subtitle.Position = UDim2.new(0, 10, 1, -25)
+subtitle.Text = "made by pr1m0"
+subtitle.BackgroundTransparency = 1
+subtitle.Font = Enum.Font.FredokaOne
+subtitle.TextColor3 = Color3.new(1, 1, 1)
+subtitle.TextSize = 16
+subtitle.ZIndex = 11
+subtitle.Parent = container
+addShadowText(subtitle)
+
+-- Activate Loader Button
+local button = Instance.new("TextButton")
+button.Size = UDim2.new(0.6, 0, 0.22, 0)
+button.Position = UDim2.new(0.5, 0, 0.4, 0)
+button.AnchorPoint = Vector2.new(0.5, 0.5)
+button.BackgroundColor3 = Color3.fromRGB(60, 150, 60)
+button.Text = "Activate Loader"
+button.Font = Enum.Font.FredokaOne
+button.TextSize = 22
+button.TextColor3 = Color3.new(1, 1, 1)
+button.TextStrokeTransparency = 0.8
+button.ZIndex = 11
+button.Parent = container
+Instance.new("UICorner", button).CornerRadius = UDim.new(0, 10)
+addShadowFrame(button)
+addShadowText(button)
+
+-- Create Cartoon Loader
+local function createLoadingBar()
+	local loadingFrame = Instance.new("Frame")
+	loadingFrame.Name = "LoaderBar"
+	loadingFrame.Size = UDim2.new(0.85, 0, 0.15, 0)
+	loadingFrame.Position = UDim2.new(0.5, 0, 0.72, 0)
+	loadingFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+	loadingFrame.BackgroundTransparency = 1
+	loadingFrame.ZIndex = 12
+	loadingFrame.Parent = container
+	addShadowFrame(loadingFrame)
+
+	local bg = Instance.new("ImageLabel")
+	bg.Size = UDim2.new(1, 0, 1, 0)
+	bg.Position = UDim2.new(0, 0, 0, 0)
+	bg.BackgroundTransparency = 1
+	bg.Image = "rbxassetid://607247449"
+	bg.ScaleType = Enum.ScaleType.Slice
+	bg.SliceCenter = Rect.new(10, 10, 90, 90)
+	bg.ZIndex = 12
+	bg.Parent = loadingFrame
+	Instance.new("UICorner", bg).CornerRadius = UDim.new(0, 12)
+
+	local fill = Instance.new("Frame")
+	fill.Size = UDim2.new(0, 0, 1, 0)
+	fill.BackgroundColor3 = Color3.fromRGB(102, 255, 102)
+	fill.BorderSizePixel = 0
+	fill.BackgroundTransparency = 0.2
+	fill.ZIndex = 13
+	fill.Parent = bg
+	Instance.new("UICorner", fill).CornerRadius = UDim.new(0, 12)
+
+	local percent = Instance.new("TextLabel")
+	percent.Size = UDim2.new(1, 0, 1, 0)
+	percent.BackgroundTransparency = 1
+	percent.Text = "0%"
+	percent.Font = Enum.Font.FredokaOne
+	percent.TextColor3 = Color3.new(1, 1, 1)
+	percent.TextSize = 16
+	percent.TextStrokeTransparency = 0.8
+	percent.ZIndex = 14
+	percent.Parent = bg
+	addShadowText(percent)
+
+	task.spawn(function()
+		local current = 0
+		local stucks = {20, 60, 95}
+		for i = 1, 100 do
+			current = i
+			fill.Size = UDim2.new(current / 100, 0, 1, 0)
+			percent.Text = current .. "%"
+			if table.find(stucks, i) then
+				task.wait(1)
+			else
+				task.wait(0.04)
+			end
+		end
+	end)
+end
+
+-- Button Pressed
+button.MouseButton1Click:Connect(function()
+	if not container:FindFirstChild("LoaderBar") then
+		button.Text = "Please wait..."
+		button.AutoButtonColor = false
+		button.BackgroundColor3 = Color3.fromRGB(90, 90, 90)
+		button.TextColor3 = Color3.fromRGB(200, 200, 200)
+		button.Active = false
+		createLoadingBar()
+	end
+end)
+
+-- Minimize & Restore
+local minimized = false
+
+minimizeBtn.MouseButton1Click:Connect(function()
+	if minimized then return end
+	minimized = true
+
+	container.Visible = false
+	raccoonBtn.Visible = true
+end)
+
+raccoonBtn.MouseButton1Click:Connect(function()
+	if not minimized then return end
+	minimized = false
+
+	container.Visible = true
+	raccoonBtn.Visible = false
+end)
