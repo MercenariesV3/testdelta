@@ -1,0 +1,124 @@
+local player = game.Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+local TweenService = game:GetService("TweenService")
+
+-- Clear old UI
+if playerGui:FindFirstChild("MiniPopup") then
+	playerGui.MiniPopup:Destroy()
+end
+
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "MiniPopup"
+screenGui.IgnoreGuiInset = true
+screenGui.ResetOnSpawn = false
+screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Global
+screenGui.DisplayOrder = 999
+screenGui.Parent = playerGui
+
+-- Utility: Shadow text
+local function addShadowText(label)
+	local shadow = label:Clone()
+	shadow.TextColor3 = Color3.new(0, 0, 0)
+	shadow.TextTransparency = 0.8
+	shadow.ZIndex = label.ZIndex - 1
+	shadow.Position = label.Position + UDim2.new(0, 2, 0, 2)
+	shadow.Name = label.Name .. "_Shadow"
+	shadow.TextStrokeTransparency = 1
+	shadow.Parent = label.Parent
+end
+
+-- Utility: Stroke on frames
+local function addShadowFrame(frame)
+	local stroke = Instance.new("UIStroke")
+	stroke.Color = Color3.new(0, 0, 0)
+	stroke.Thickness = 1
+	stroke.Transparency = 0.6
+	stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+	stroke.Parent = frame
+end
+
+-- Container
+local container = Instance.new("Frame")
+container.Size = UDim2.new(0, 360, 0, 200)
+container.Position = UDim2.new(0.5, 0, 0.5, 0)
+container.AnchorPoint = Vector2.new(0.5, 0.5)
+container.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+container.BackgroundTransparency = 0
+container.ZIndex = 10
+container.Parent = screenGui
+addShadowFrame(container)
+
+Instance.new("UICorner", container).CornerRadius = UDim.new(0, 14)
+
+-- Animated gradient inside container
+local gradient = Instance.new("UIGradient")
+gradient.Color = ColorSequence.new{
+	ColorSequenceKeypoint.new(0, Color3.fromRGB(60, 60, 60)),
+	ColorSequenceKeypoint.new(1, Color3.fromRGB(25, 25, 25))
+}
+gradient.Rotation = 0
+gradient.Parent = container
+
+task.spawn(function()
+	while container.Parent do
+		gradient.Rotation = (gradient.Rotation + 0.05) % 360
+		task.wait(0.01)
+	end
+end)
+
+-- Activate Button
+local button = Instance.new("TextButton")
+button.Size = UDim2.new(0.6, 0, 0.25, 0)
+button.Position = UDim2.new(0.5, 0, 0.5, 0)
+button.AnchorPoint = Vector2.new(0.5, 0.5)
+button.BackgroundColor3 = Color3.fromRGB(60, 150, 60)
+button.Text = "Activate Loader"
+button.Font = Enum.Font.FredokaOne
+button.TextSize = 22
+button.TextColor3 = Color3.new(1, 1, 1)
+button.TextStrokeTransparency = 0.8
+button.ZIndex = 11
+button.Parent = container
+addShadowFrame(button)
+
+local buttonCorner = Instance.new("UICorner")
+buttonCorner.CornerRadius = UDim.new(0, 10)
+buttonCorner.Parent = button
+
+addShadowText(button)
+
+-- Pop-up label (hidden initially)
+local popupText = Instance.new("TextLabel")
+popupText.Size = UDim2.new(1, -20, 0.2, 0)
+popupText.Position = UDim2.new(0, 10, 0.75, 0)
+popupText.BackgroundTransparency = 1
+popupText.Text = "Loader Activated!"
+popupText.Font = Enum.Font.FredokaOne
+popupText.TextSize = 20
+popupText.TextColor3 = Color3.new(1, 1, 1)
+popupText.TextStrokeTransparency = 0.8
+popupText.Visible = false
+popupText.ZIndex = 11
+popupText.TextWrapped = true
+popupText.Parent = container
+addShadowText(popupText)
+
+-- "made by pr1m0" subtitle
+local subtitle = Instance.new("TextLabel")
+subtitle.Size = UDim2.new(1, -20, 0.1, 0)
+subtitle.Position = UDim2.new(0, 10, 1, -25)
+subtitle.Text = "made by pr1m0"
+subtitle.BackgroundTransparency = 1
+subtitle.Font = Enum.Font.FredokaOne
+subtitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+subtitle.TextSize = 16
+subtitle.TextStrokeTransparency = 0.8
+subtitle.ZIndex = 11
+subtitle.Parent = container
+addShadowText(subtitle)
+
+-- Button action
+button.MouseButton1Click:Connect(function()
+	popupText.Visible = true
+	TweenService:Create(popupText, TweenInfo.new(0.4), {TextTransparency = 0}):Play()
+end)
