@@ -1,0 +1,259 @@
+local player = game.Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+local TweenService = game:GetService("TweenService")
+
+-- Destroy old GUI
+if playerGui:FindFirstChild("CustomUI") then
+	playerGui.CustomUI:Destroy()
+end
+
+-- Screen GUI
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "CustomUI"
+screenGui.IgnoreGuiInset = true
+screenGui.ResetOnSpawn = false
+screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Global
+screenGui.DisplayOrder = 999
+screenGui.Parent = playerGui
+
+-- Main Container
+local container = Instance.new("Frame")
+container.Size = UDim2.new(0, 400, 0, 260)
+container.Position = UDim2.new(0.5, -200, 0.5, -130)
+container.BackgroundTransparency = 0.4
+container.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+container.BorderSizePixel = 0
+container.Visible = false
+container.Parent = screenGui
+Instance.new("UICorner", container)
+local blur = Instance.new("UIStroke", container)
+blur.Color = Color3.fromRGB(255, 255, 255)
+blur.Thickness = 1
+blur.Transparency = 0.6
+blur.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+
+-- Toggle Button (Top Left)
+local toggleBtn = Instance.new("TextButton")
+toggleBtn.Size = UDim2.new(0, 40, 0, 40)
+toggleBtn.Position = UDim2.new(0, 10, 0, 10)
+toggleBtn.BackgroundTransparency = 1
+toggleBtn.Text = "🦝"
+toggleBtn.Font = Enum.Font.FredokaOne
+toggleBtn.TextSize = 28
+toggleBtn.TextColor3 = Color3.new(1, 1, 1)
+toggleBtn.ZIndex = 10
+toggleBtn.Parent = screenGui
+
+-- Minimize Button (Top Right of Container)
+local minimizeBtn = Instance.new("TextButton")
+minimizeBtn.Size = UDim2.new(0, 24, 0, 24)
+minimizeBtn.Position = UDim2.new(1, -30, 0, 6)
+minimizeBtn.BackgroundTransparency = 1
+minimizeBtn.Text = "🗕"
+minimizeBtn.Font = Enum.Font.FredokaOne
+minimizeBtn.TextSize = 16
+minimizeBtn.TextColor3 = Color3.new(1, 1, 1)
+minimizeBtn.Parent = container
+
+-- Title
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1, -20, 0, 40)
+title.Position = UDim2.new(0, 10, 0, 0)
+title.Text = "Script Hub Loader"
+title.BackgroundTransparency = 1
+title.Font = Enum.Font.FredokaOne
+title.TextColor3 = Color3.new(1, 1, 1)
+title.TextSize = 24
+title.TextXAlignment = Enum.TextXAlignment.Center
+title.Parent = container
+
+-- Activate Loader
+local activateBtn = Instance.new("TextButton")
+activateBtn.Size = UDim2.new(1, -20, 0, 40)
+activateBtn.Position = UDim2.new(0, 10, 0.5, -20)
+activateBtn.BackgroundColor3 = Color3.fromRGB(102, 255, 102)
+activateBtn.Text = "Activate Loader"
+activateBtn.Font = Enum.Font.FredokaOne
+activateBtn.TextColor3 = Color3.new(0, 0, 0)
+activateBtn.TextSize = 18
+activateBtn.ZIndex = 2
+activateBtn.AutoButtonColor = true
+activateBtn.Parent = container
+Instance.new("UICorner", activateBtn)
+
+-- Universal Warning Generator
+local function createWarning(parent, posY)
+	local warning = Instance.new("TextLabel")
+	warning.Size = UDim2.new(1, -20, 0, 40)
+	warning.Position = UDim2.new(0, 10, 0, posY)
+	warning.Text = "⚠ The server will restart when the script is activated\nto prevent being detected"
+	warning.BackgroundTransparency = 1
+	warning.Font = Enum.Font.FredokaOne
+	warning.TextColor3 = Color3.fromRGB(255, 180, 100)
+	warning.TextSize = 14
+	warning.TextWrapped = true
+	warning.Parent = parent
+end
+
+-- General Loader Function
+local function createLoader(duration, titleText, callback)
+	for _, child in ipairs(container:GetChildren()) do
+		if not child:IsA("UICorner") and not child:IsA("UIStroke") then
+			child:Destroy()
+		end
+	end
+
+	container.Size = UDim2.new(0, 400, 0, 260)
+
+	local titleLabel = Instance.new("TextLabel")
+	titleLabel.Size = UDim2.new(1, -20, 0, 40)
+	titleLabel.Position = UDim2.new(0, 10, 0, 0)
+	titleLabel.Text = titleText or "Loading..."
+	titleLabel.BackgroundTransparency = 1
+	titleLabel.Font = Enum.Font.FredokaOne
+	titleLabel.TextColor3 = Color3.new(1, 1, 1)
+	titleLabel.TextSize = 24
+	titleLabel.TextXAlignment = Enum.TextXAlignment.Center
+	titleLabel.Parent = container
+
+	local loader = Instance.new("Frame")
+	loader.Size = UDim2.new(1, -20, 0, 40)
+	loader.Position = UDim2.new(0, 10, 0.5, -30)
+	loader.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+	loader.Parent = container
+	Instance.new("UICorner", loader)
+
+	local fill = Instance.new("Frame")
+	fill.Size = UDim2.new(0, 0, 1, 0)
+	fill.BackgroundColor3 = Color3.fromRGB(102, 255, 102)
+	fill.Parent = loader
+	Instance.new("UICorner", fill)
+
+	local percent = Instance.new("TextLabel")
+	percent.Size = UDim2.new(1, 0, 1, 0)
+	percent.BackgroundTransparency = 1
+	percent.Text = "0%"
+	percent.Font = Enum.Font.FredokaOne
+	percent.TextColor3 = Color3.new(1, 1, 1)
+	percent.TextSize = 16
+	percent.Parent = loader
+
+	createWarning(container, 170)
+	minimizeBtn.Parent = container
+
+	task.spawn(function()
+		for i = 1, 100 do
+			fill.Size = UDim2.new(i / 100, 0, 1, 0)
+			percent.Text = i .. "%"
+			if i == 25 or i == 60 or i == 95 then
+				task.wait(1)
+			else
+				task.wait(duration / 100)
+			end
+		end
+		task.wait(0.5)
+
+		-- Server Restart Message
+		for _, c in ipairs(container:GetChildren()) do
+			if not c:IsA("UICorner") and not c:IsA("UIStroke") then
+				c:Destroy()
+			end
+		end
+
+		local restartMsg = Instance.new("TextLabel")
+		restartMsg.Size = UDim2.new(1, -20, 0, 80)
+		restartMsg.Position = UDim2.new(0, 10, 0.5, -40)
+		restartMsg.Text = "🔁 Server restarting in a minute..."
+		restartMsg.Font = Enum.Font.FredokaOne
+		restartMsg.TextSize = 22
+		restartMsg.TextColor3 = Color3.fromRGB(255, 255, 0)
+		restartMsg.BackgroundTransparency = 1
+		restartMsg.TextWrapped = true
+		restartMsg.TextXAlignment = Enum.TextXAlignment.Center
+		restartMsg.TextYAlignment = Enum.TextYAlignment.Center
+		restartMsg.Parent = container
+
+		createWarning(container, 200)
+		minimizeBtn.Parent = container
+
+		task.wait(3)
+		if callback then callback() end
+	end)
+end
+
+-- Show Script Buttons
+local function showTabs()
+	container:ClearAllChildren()
+	container.Size = UDim2.new(0, 400, 0, 270)
+
+	local sectionTitle = Instance.new("TextLabel")
+	sectionTitle.Size = UDim2.new(1, -20, 0, 40)
+	sectionTitle.Position = UDim2.new(0, 10, 0, 0)
+	sectionTitle.Text = "Select Script"
+	sectionTitle.BackgroundTransparency = 1
+	sectionTitle.Font = Enum.Font.FredokaOne
+	sectionTitle.TextColor3 = Color3.new(1, 1, 1)
+	sectionTitle.TextSize = 22
+	sectionTitle.TextXAlignment = Enum.TextXAlignment.Center
+	sectionTitle.Parent = container
+
+	local tabNames = {"Server Hop (Old)", "Eggs ESP / Reroll", "Pet Dupe"}
+	for i, name in ipairs(tabNames) do
+		local btn = Instance.new("TextButton")
+		btn.Size = UDim2.new(1, -20, 0, 40)
+		btn.Position = UDim2.new(0, 10, 0, 40 + ((i - 1) * 50))
+		btn.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+		btn.Text = name
+		btn.Font = Enum.Font.FredokaOne
+		btn.TextColor3 = Color3.new(1, 1, 1)
+		btn.TextSize = 18
+		btn.Parent = container
+		Instance.new("UICorner", btn)
+
+		btn.MouseButton1Click:Connect(function()
+			createLoader(10, "Loading " .. name .. "...", showTabs)
+		end)
+	end
+
+	createWarning(container, 200)
+	minimizeBtn.Parent = container
+end
+
+-- Animations
+local function animateIn()
+	container.Visible = true
+	container.Size = UDim2.new(0, 0, 0, 0)
+	container.Position = UDim2.new(0.5, 0, 0.5, 0)
+	TweenService:Create(container, TweenInfo.new(0.3), {
+		Size = UDim2.new(0, 400, 0, 260),
+		Position = UDim2.new(0.5, -200, 0.5, -130)
+	}):Play()
+end
+
+local function animateOut()
+	TweenService:Create(container, TweenInfo.new(0.3), {
+		Size = UDim2.new(0, 0, 0, 0),
+		Position = UDim2.new(0.5, 0, 0.5, 0)
+	}):Play()
+	task.delay(0.3, function()
+		container.Visible = false
+	end)
+end
+
+-- Connect Actions
+activateBtn.MouseButton1Click:Connect(function()
+	activateBtn.Text = "Please wait..."
+	activateBtn.AutoButtonColor = false
+	activateBtn.BackgroundColor3 = Color3.fromRGB(150, 150, 150)
+	createLoader(20, "Loading...", showTabs)
+end)
+
+toggleBtn.MouseButton1Click:Connect(function()
+	if container.Visible then
+		animateOut()
+	else
+		animateIn()
+	end
+end)
+
+minimizeBtn.MouseButton1Click:Connect(animateOut)
