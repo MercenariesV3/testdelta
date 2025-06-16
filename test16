@@ -1,0 +1,239 @@
+--// Services
+local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
+local player = game.Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+
+--// Clean old UI
+if playerGui:FindFirstChild("CustomUI") then
+	playerGui.CustomUI:Destroy()
+end
+
+--// Main GUI
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "CustomUI"
+screenGui.IgnoreGuiInset = true
+screenGui.ResetOnSpawn = false
+screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Global
+screenGui.DisplayOrder = 999
+screenGui.Parent = playerGui
+
+--// Main Container
+local container = Instance.new("Frame")
+container.Size = UDim2.new(0, 400, 0, 300)
+container.Position = UDim2.new(0.5, -200, 0.5, -150)
+container.BackgroundTransparency = 0.4
+container.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+container.BorderSizePixel = 0
+container.Visible = true
+container.Parent = screenGui
+
+local uiCorner = Instance.new("UICorner")
+uiCorner.CornerRadius = UDim.new(0, 12)
+uiCorner.Parent = container
+
+local stroke = Instance.new("UIStroke")
+stroke.Color = Color3.fromRGB(255, 255, 255)
+stroke.Thickness = 1
+stroke.Transparency = 0.6
+stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+stroke.Parent = container
+
+--// Title
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1, 0, 0, 40)
+title.Position = UDim2.new(0.5, 0, 0, 0)
+title.AnchorPoint = Vector2.new(0.5, 0)
+title.Text = "Script Hub Loader"
+title.BackgroundTransparency = 1
+title.Font = Enum.Font.FredokaOne
+title.TextColor3 = Color3.new(1, 1, 1)
+title.TextSize = 24
+title.TextXAlignment = Enum.TextXAlignment.Center
+title.Parent = container
+
+--// Raccoon Button (Minimize/Maximize)
+local toggleBtn = Instance.new("TextButton")
+toggleBtn.Size = UDim2.new(0, 28, 0, 28)
+toggleBtn.Position = UDim2.new(1, -32, 0, 6)
+toggleBtn.BackgroundTransparency = 1
+toggleBtn.Text = "🦝"
+toggleBtn.Font = Enum.Font.FredokaOne
+toggleBtn.TextSize = 22
+toggleBtn.TextColor3 = Color3.new(1, 1, 1)
+toggleBtn.ZIndex = 3
+toggleBtn.Parent = container
+
+--// Warning Note
+local warning = Instance.new("TextLabel")
+warning.Size = UDim2.new(1, -20, 0, 36)
+warning.Position = UDim2.new(0, 10, 1, -40)
+warning.Text = "⚠ The server will restart when the script is activated to prevent being detected"
+warning.BackgroundTransparency = 1
+warning.Font = Enum.Font.FredokaOne
+warning.TextColor3 = Color3.fromRGB(255, 180, 100)
+warning.TextSize = 14
+warning.TextWrapped = true
+warning.Parent = container
+
+--// Activate Button
+local activateBtn = Instance.new("TextButton")
+activateBtn.Size = UDim2.new(1, -20, 0, 40)
+activateBtn.Position = UDim2.new(0, 10, 0, 60)
+activateBtn.BackgroundColor3 = Color3.fromRGB(102, 255, 102)
+activateBtn.Text = "Activate Loader"
+activateBtn.Font = Enum.Font.FredokaOne
+activateBtn.TextColor3 = Color3.new(0, 0, 0)
+activateBtn.TextSize = 18
+activateBtn.ZIndex = 2
+activateBtn.AutoButtonColor = true
+activateBtn.Parent = container
+Instance.new("UICorner", activateBtn)
+
+--// Draggable function
+local function makeDraggable(frame)
+	local dragging = false
+	local dragInput, dragStart, startPos
+
+	frame.InputBegan:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 then
+			dragging = true
+			dragStart = input.Position
+			startPos = frame.Position
+
+			input.Changed:Connect(function()
+				if input.UserInputState == Enum.UserInputState.End then
+					dragging = false
+				end
+			end)
+		end
+	end)
+
+	frame.InputChanged:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseMovement then
+			dragInput = input
+		end
+	end)
+
+	UserInputService.InputChanged:Connect(function(input)
+		if input == dragInput and dragging then
+			local delta = input.Position - dragStart
+			frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X,
+				startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+		end
+	end)
+end
+makeDraggable(container)
+makeDraggable(toggleBtn)
+
+--// Loader
+local function createLoader(duration, callback)
+	local loader = Instance.new("Frame")
+	loader.Size = UDim2.new(1, -20, 0, 40)
+	loader.Position = UDim2.new(0.5, 0, 0.5, -20)
+	loader.AnchorPoint = Vector2.new(0.5, 0.5)
+	loader.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+	loader.Parent = container
+	Instance.new("UICorner", loader)
+
+	local fill = Instance.new("Frame")
+	fill.Size = UDim2.new(0, 0, 1, 0)
+	fill.BackgroundColor3 = Color3.fromRGB(102, 255, 102)
+	fill.Parent = loader
+	Instance.new("UICorner", fill)
+
+	local percent = Instance.new("TextLabel")
+	percent.Size = UDim2.new(1, 0, 1, 0)
+	percent.BackgroundTransparency = 1
+	percent.Text = "0%"
+	percent.Font = Enum.Font.FredokaOne
+	percent.TextColor3 = Color3.new(1, 1, 1)
+	percent.TextSize = 16
+	percent.Parent = loader
+
+	task.spawn(function()
+		for i = 1, 100 do
+			fill.Size = UDim2.new(i / 100, 0, 1, 0)
+			percent.Text = i .. "%"
+			if i == 25 or i == 60 then
+				task.wait(1)
+			else
+				task.wait(duration / 100)
+			end
+		end
+		task.wait(1)
+		if callback then callback() end
+	end)
+end
+
+--// Show Tabs
+local function showTabs()
+	for _, child in ipairs(container:GetChildren()) do
+		if not (child:IsA("TextLabel") and child.Text:find("Script Hub")) then
+			child:Destroy()
+		end
+	end
+
+	title.Text = "Select Script"
+
+	local names = {"Server Hop (Old)", "Eggs ESP / Reroll", "Pet Dupe"}
+	for i, name in ipairs(names) do
+		local btn = Instance.new("TextButton")
+		btn.Size = UDim2.new(1, -20, 0, 40)
+		btn.Position = UDim2.new(0, 10, 0, (i - 1) * 50 + 60)
+		btn.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+		btn.Text = name
+		btn.Font = Enum.Font.FredokaOne
+		btn.TextColor3 = Color3.new(1, 1, 1)
+		btn.TextSize = 18
+		btn.Parent = container
+		Instance.new("UICorner", btn)
+
+		btn.MouseButton1Click:Connect(function()
+			title.Text = "Loading " .. name .. "..."
+			for _, c in ipairs(container:GetChildren()) do
+				if c:IsA("TextButton") and c ~= toggleBtn then
+					c.Visible = false
+				end
+			end
+			createLoader(1, function()
+				title.Text = "Server Restarting in a minute"
+			end)
+		end)
+	end
+
+	warning.Parent = container -- re-attach warning
+	warning.Position = UDim2.new(0, 10, 1, -40)
+end
+
+--// Button Logic
+activateBtn.MouseButton1Click:Connect(function()
+	activateBtn.Text = "Please wait..."
+	activateBtn.AutoButtonColor = false
+	activateBtn.BackgroundColor3 = Color3.fromRGB(150, 150, 150)
+	createLoader(2, function()
+		showTabs()
+	end)
+end)
+
+local function minimizeUI()
+	container.Visible = false
+	toggleBtn.Parent = screenGui
+	toggleBtn.Position = UDim2.new(0.5, -14, 0.5, -14)
+	toggleBtn.Visible = true
+end
+
+local function maximizeUI()
+	container.Visible = true
+	toggleBtn.Parent = container
+	toggleBtn.Position = UDim2.new(1, -32, 0, 6)
+	toggleBtn.Visible = true
+end
+
+toggleBtn.MouseButton1Click:Connect(function()
+	if container.Visible then
+		minimizeUI()
+	else
+		maximizeUI()
+	end
+end)
