@@ -1,0 +1,223 @@
+local player = game.Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+local TweenService = game:GetService("TweenService")
+
+if playerGui:FindFirstChild("CustomUI") then
+	playerGui.CustomUI:Destroy()
+end
+
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "CustomUI"
+screenGui.IgnoreGuiInset = true
+screenGui.ResetOnSpawn = false
+screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Global
+screenGui.DisplayOrder = 999
+screenGui.Parent = playerGui
+
+-- Utility Functions
+local function addShadowText(label)
+	local shadow = label:Clone()
+	shadow.TextColor3 = Color3.new(0, 0, 0)
+	shadow.TextTransparency = 0.8
+	shadow.ZIndex = label.ZIndex - 1
+	shadow.Position = label.Position + UDim2.new(0, 2, 0, 2)
+	shadow.Name = label.Name .. "_Shadow"
+	shadow.Parent = label.Parent
+end
+
+local function addShadowFrame(frame)
+	local stroke = Instance.new("UIStroke")
+	stroke.Color = Color3.new(0, 0, 0)
+	stroke.Thickness = 1
+	stroke.Transparency = 0.6
+	stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+	stroke.Parent = frame
+end
+
+-- Container
+local container = Instance.new("Frame")
+container.Size = UDim2.new(0, 400, 0, 250)
+container.Position = UDim2.new(0.5, -200, 0.5, -125)
+container.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+container.ZIndex = 10
+container.ClipsDescendants = true
+container.Parent = screenGui
+addShadowFrame(container)
+
+-- Background Gradient
+local uiGradient = Instance.new("UIGradient", container)
+uiGradient.Color = ColorSequence.new{
+	ColorSequenceKeypoint.new(0, Color3.fromRGB(60, 60, 60)),
+	ColorSequenceKeypoint.new(1, Color3.fromRGB(25, 25, 25))
+}
+task.spawn(function()
+	while container.Parent do
+		uiGradient.Rotation = (uiGradient.Rotation + 0.05) % 360
+		task.wait(0.01)
+	end
+end)
+
+-- Title
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1, 0, 0, 40)
+title.Position = UDim2.new(0, 0, 0, 10)
+title.Text = "Script Hub Loader"
+title.BackgroundTransparency = 1
+title.Font = Enum.Font.FredokaOne
+title.TextColor3 = Color3.new(1, 1, 1)
+title.TextSize = 28
+title.TextStrokeTransparency = 0.9
+title.ZIndex = 11
+title.Parent = container
+addShadowText(title)
+
+-- Subtitle
+local subtitle = Instance.new("TextLabel")
+subtitle.Size = UDim2.new(1, 0, 0, 20)
+subtitle.Position = UDim2.new(0, 0, 0, 40)
+subtitle.Text = "made by pr1m0"
+subtitle.BackgroundTransparency = 1
+subtitle.Font = Enum.Font.FredokaOne
+subtitle.TextColor3 = Color3.new(1, 1, 1)
+subtitle.TextSize = 16
+subtitle.TextStrokeTransparency = 0.9
+subtitle.ZIndex = 11
+subtitle.Parent = container
+addShadowText(subtitle)
+
+-- Minimize Button
+local minimizeBtn = Instance.new("TextButton")
+minimizeBtn.Size = UDim2.new(0, 30, 0, 30)
+minimizeBtn.Position = UDim2.new(1, -35, 0, 5)
+minimizeBtn.Text = "–"
+minimizeBtn.Font = Enum.Font.FredokaOne
+minimizeBtn.TextSize = 20
+minimizeBtn.TextColor3 = Color3.new(1, 1, 1)
+minimizeBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+minimizeBtn.BorderSizePixel = 0
+minimizeBtn.ZIndex = 11
+minimizeBtn.Parent = container
+addShadowText(minimizeBtn)
+
+-- Activate Button
+local activateButton = Instance.new("TextButton")
+activateButton.Size = UDim2.new(0, 200, 0, 40)
+activateButton.Position = UDim2.new(0.5, -100, 0.5, -20)
+activateButton.Text = "Activate Loader"
+activateButton.Font = Enum.Font.FredokaOne
+activateButton.TextSize = 20
+activateButton.TextColor3 = Color3.new(1, 1, 1)
+activateButton.BackgroundColor3 = Color3.fromRGB(80, 180, 80)
+activateButton.BorderSizePixel = 0
+activateButton.ZIndex = 11
+activateButton.Parent = container
+addShadowFrame(activateButton)
+
+-- Warning
+local warningText = Instance.new("TextLabel")
+warningText.Size = UDim2.new(1, -20, 0, 25)
+warningText.Position = UDim2.new(0, 10, 1, -30)
+warningText.Text = "⚠ The server will restart when the script is activated to prevent being detected"
+warningText.BackgroundTransparency = 1
+warningText.Font = Enum.Font.FredokaOne
+warningText.TextColor3 = Color3.fromRGB(255, 100, 100)
+warningText.TextSize = 14
+warningText.TextStrokeTransparency = 0.9
+warningText.ZIndex = 11
+warningText.Parent = container
+addShadowText(warningText)
+
+-- Minimized Icon
+local icon = Instance.new("TextButton")
+icon.Size = UDim2.new(0, 40, 0, 40)
+icon.Position = UDim2.new(0, 10, 0, 10)
+icon.Text = "🦝"
+icon.Visible = false
+icon.BackgroundTransparency = 1
+icon.Font = Enum.Font.FredokaOne
+icon.TextSize = 30
+icon.TextColor3 = Color3.new(1, 1, 1)
+icon.ZIndex = 11
+icon.Parent = screenGui
+
+-- Minimize Logic
+minimizeBtn.MouseButton1Click:Connect(function()
+	container.Visible = false
+	icon.Visible = true
+end)
+
+icon.MouseButton1Click:Connect(function()
+	container.Visible = true
+	icon.Visible = false
+end)
+
+-- Loader Function
+local function createLoadingBar()
+	local bar = Instance.new("Frame")
+	bar.Size = UDim2.new(0.8, 0, 0, 30)
+	bar.Position = UDim2.new(0.1, 0, 0.7, 0)
+	bar.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+	bar.ZIndex = 11
+	bar.Parent = container
+	addShadowFrame(bar)
+	Instance.new("UICorner", bar).CornerRadius = UDim.new(0, 12)
+
+	local fill = Instance.new("Frame")
+	fill.Size = UDim2.new(0, 0, 1, 0)
+	fill.BackgroundColor3 = Color3.fromRGB(102, 255, 102)
+	fill.BackgroundTransparency = 0.2
+	fill.ZIndex = 12
+	fill.Parent = bar
+	Instance.new("UICorner", fill).CornerRadius = UDim.new(0, 12)
+
+	local percent = Instance.new("TextLabel")
+	percent.Size = UDim2.new(1, 0, 1, 0)
+	percent.BackgroundTransparency = 1
+	percent.Font = Enum.Font.FredokaOne
+	percent.TextColor3 = Color3.new(1, 1, 1)
+	percent.TextSize = 16
+	percent.Text = "0%"
+	percent.ZIndex = 13
+	percent.Parent = bar
+	addShadowText(percent)
+
+	task.spawn(function()
+		for i = 1, 100 do
+			fill.Size = UDim2.new(i/100, 0, 1, 0)
+			percent.Text = i .. "%"
+			if i == 20 or i == 60 or i == 95 then
+				task.wait(1)
+			else
+				task.wait(20 / 100)
+			end
+		end
+		bar:Destroy()
+		activateButton:Destroy()
+		showScriptTabs()
+	end)
+end
+
+-- Show Tabs
+function showScriptTabs()
+	local tabNames = {"Server Hop (Old)", "Eggs ESP / Reroll", "Pet Dupe"}
+	for i, name in ipairs(tabNames) do
+		local tab = Instance.new("TextButton")
+		tab.Size = UDim2.new(0, 360, 0, 40)
+		tab.Position = UDim2.new(0, 20, 0, 40 + (i * 45))
+		tab.Text = name
+		tab.Font = Enum.Font.FredokaOne
+		tab.TextSize = 20
+		tab.TextColor3 = Color3.new(1, 1, 1)
+		tab.BackgroundColor3 = Color3.fromRGB(80, 80, 180)
+		tab.ZIndex = 11
+		tab.Parent = container
+		addShadowFrame(tab)
+	end
+end
+
+-- Activate Button Logic
+activateButton.MouseButton1Click:Connect(function()
+	activateButton.Text = "Please wait..."
+	activateButton.AutoButtonColor = false
+	createLoadingBar()
+end)
