@@ -1,0 +1,66 @@
+local player = game.Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+
+-- Create ScreenGui
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "LoaderPopupGUI"
+screenGui.ResetOnSpawn = false
+screenGui.IgnoreGuiInset = true
+screenGui.Parent = playerGui
+
+-- Create Main Container (Popup)
+local popup = Instance.new("Frame")
+popup.Size = UDim2.new(0, 300, 0, 150)
+popup.Position = UDim2.new(0.5, -150, 0.5, -75)
+popup.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+popup.BackgroundTransparency = 0.2
+popup.BorderSizePixel = 0
+popup.Visible = false
+popup.AnchorPoint = Vector2.new(0.5, 0.5)
+popup.Parent = screenGui
+
+-- UI Corner for rounded edges
+local corner = Instance.new("UICorner")
+corner.CornerRadius = UDim.new(0, 12)
+corner.Parent = popup
+
+-- Popup Text
+local label = Instance.new("TextLabel")
+label.Size = UDim2.new(1, -20, 1, -20)
+label.Position = UDim2.new(0, 10, 0, 10)
+label.BackgroundTransparency = 1
+label.Text = "Loader Activated!"
+label.Font = Enum.Font.FredokaOne
+label.TextSize = 26
+label.TextColor3 = Color3.fromRGB(255, 255, 255)
+label.TextStrokeTransparency = 0.8
+label.TextWrapped = true
+label.Parent = popup
+
+-- Create "Activate Loader" Button
+local button = Instance.new("TextButton")
+button.Size = UDim2.new(0, 200, 0, 50)
+button.Position = UDim2.new(0.5, -100, 0.8, 0)
+button.AnchorPoint = Vector2.new(0.5, 0)
+button.BackgroundColor3 = Color3.fromRGB(60, 150, 60)
+button.Text = "Activate Loader"
+button.Font = Enum.Font.FredokaOne
+button.TextSize = 22
+button.TextColor3 = Color3.new(1, 1, 1)
+button.TextStrokeTransparency = 0.7
+button.Parent = screenGui
+
+local buttonCorner = Instance.new("UICorner")
+buttonCorner.CornerRadius = UDim.new(0, 10)
+buttonCorner.Parent = button
+
+-- Tween animation
+local TweenService = game:GetService("TweenService")
+local popupTween = TweenService:Create(popup, TweenInfo.new(0.4, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {BackgroundTransparency = 0.05})
+
+-- Button Click Logic
+button.MouseButton1Click:Connect(function()
+	popup.Visible = true
+	popup.BackgroundTransparency = 1
+	popupTween:Play()
+end)
